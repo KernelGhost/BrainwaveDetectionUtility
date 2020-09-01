@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.awt.event.ActionEvent;
 import java.awt.Toolkit;
+import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.SwingConstants;
 
@@ -23,12 +24,15 @@ public class frmMainMenu extends JFrame {
 		setTitle("Main Menu");
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(0, 0, 550, 300);
-		setLocationRelativeTo(null);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setPreferredSize(new Dimension(550, 280));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		
+		// Pack and center the JFrame
+		pack();
+		setLocationRelativeTo(null);
 		
 		// LABELS
 		// lblBrainwaveDetectionUtility

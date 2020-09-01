@@ -13,6 +13,7 @@ import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
 
 import java.awt.Color;
+import java.awt.Dimension;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -276,10 +277,9 @@ public class frmSerialOut extends JFrame {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(frmSerialOut.class.getResource("/resources/graphics/AppIcon.png")));
 		setTitle("Output Serial Data");
 		setResizable(false);
-		setBounds(0, 0, 830, 430);
-		setLocationRelativeTo(null);
 	    contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setPreferredSize(new Dimension(830, 408));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		addWindowListener(new java.awt.event.WindowAdapter() {
@@ -288,6 +288,10 @@ public class frmSerialOut extends JFrame {
 		    	Close();
 		    }
 		});
+		
+		// Pack and center the JFrame
+		pack();
+		setLocationRelativeTo(null);
 		
 		// LABELS
 		// lblForceTrainer

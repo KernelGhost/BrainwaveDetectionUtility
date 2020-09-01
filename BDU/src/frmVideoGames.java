@@ -17,6 +17,8 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
+import java.awt.Dimension;
+
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import javax.swing.JProgressBar;
@@ -105,18 +107,21 @@ public class frmVideoGames extends JFrame {
 		setResizable(false);
 		setIconImage(Toolkit.getDefaultToolkit().getImage(frmVideoGames.class.getResource("/resources/graphics/AppIcon.png")));
 		setTitle("Airball");
-		setBounds(0, 0, 852, 516);
 		addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
 		    	Close();
 		    }
 		});
-		setLocationRelativeTo(null);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setPreferredSize(new Dimension(852, 492));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		
+		// Pack and center the JFrame
+		pack();
+		setLocationRelativeTo(null);
 		
 		// LABELS
 		// lblBaudRate

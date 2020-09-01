@@ -32,6 +32,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Toolkit;
 
 public class frmDashboard extends JFrame {
@@ -269,12 +270,15 @@ public class frmDashboard extends JFrame {
 		    	Close();
 		    }
 		});
-		setBounds(0, 0, 1300, 470);
-		setLocationRelativeTo(null);
 		paneDashboard = new JPanel();
 		paneDashboard.setBorder(new EmptyBorder(5, 5, 5, 5));
+		paneDashboard.setPreferredSize(new Dimension(1300, 448));
 		setContentPane(paneDashboard);
 		paneDashboard.setLayout(null);
+		
+		// Pack and center the JFrame
+		pack();
+		setLocationRelativeTo(null);
 		
 		// BUTTONS
 		// btnScanPorts

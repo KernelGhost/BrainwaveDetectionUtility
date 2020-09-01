@@ -10,6 +10,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.swing.JLabel;
+
+import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.SwingConstants;
 
@@ -28,12 +30,15 @@ public class frmAbout extends JFrame {
 		    	Main.window_manager.OpenWindow(0);
 		    }
 		});
-		setBounds(0, 0, 684, 342);
-		setLocationRelativeTo(null);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setPreferredSize(new Dimension(684, 322));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		
+		// Pack and center the JFrame
+		pack();
+		setLocationRelativeTo(null);
 		
 		// LABELS
 		// lblBrainwaveDetectionUtility

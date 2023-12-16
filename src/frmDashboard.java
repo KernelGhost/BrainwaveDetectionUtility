@@ -55,14 +55,15 @@ public class frmDashboard extends JFrame {
 	private JTable tblDataReceived;
 	private JPanel panelGraph;
 	private XYChart chartAttentionMeditation;
+	static final int VALUES_LEN = 12;
 	
 	// Called when new data is ready to be added to the table as new row(s)
 	public void UpdateProgressBarsTable(ArrayList<int[]> NewForceData) {
 		// For each new row (transcribed packet) of data
 		for (int intCtr = 0; intCtr < NewForceData.size(); intCtr++) {
 			// Create a string array of values using that transcribed packet
-			String strTableRow[] = new String[11];
-			for (int intSCtr = 0; intSCtr < 11; intSCtr++) {
+			String strTableRow[] = new String[VALUES_LEN];
+			for (int intSCtr = 0; intSCtr < VALUES_LEN; intSCtr++) {
 				strTableRow[intSCtr] = Integer.toString(NewForceData.get(intCtr)[intSCtr]);
 			}
 			
@@ -70,8 +71,8 @@ public class frmDashboard extends JFrame {
 			tblModel.addRow(strTableRow);
 			
 			// Update the progress bars
-			progressAttention.setValue(NewForceData.get(intCtr)[1]);
-			progressMeditation.setValue(NewForceData.get(intCtr)[2]);
+			progressAttention.setValue(NewForceData.get(intCtr)[DataFiltering.ATTENTION_INDEX]);
+			progressMeditation.setValue(NewForceData.get(intCtr)[DataFiltering.MEDITATION_INDEX]);
 			
 			// Required since code 200 means 'electrodes aren't contacting a person's skin'
 			if (NewForceData.get(intCtr)[0] != 200) {
@@ -155,6 +156,7 @@ public class frmDashboard extends JFrame {
 	// Attempts to connect to the selected serial port within a new thread
 	private boolean ConnectPort(int intPortIndex, int intBaudRate) {
 		Main.input_stream_handler = new InputStreamHandler((byte) 0);
+		Main.data_filtering = new DataFiltering();
 		boolean boolConnect = Main.input_stream_handler.ConnectPort(ports[intPortIndex], intBaudRate);
 		
 		if(boolConnect) {
@@ -223,7 +225,7 @@ public class frmDashboard extends JFrame {
 	    		ArrayList<int[]> arrlistForceData = Main.input_stream_handler.GetAllData();
 	    		
 	    		// Write CSV Header
-	    		CSVWriter.write("Signal,Attention,Meditation,Delta,Theta,Low Alpha,High Alpha,Low Beta,High Beta,Low Gamma,Medium Gamma");
+	    		CSVWriter.write("Signal,Attention,Meditation,Delta,Theta,Low Alpha,High Alpha,Low Beta,High Beta,Low Gamma,Medium Gamma,Milliseconds");
 	    		CSVWriter.newLine();
 	    		
 	    		// Write CSV data
@@ -385,7 +387,7 @@ public class frmDashboard extends JFrame {
 		
 		// TABLES
 		// tblDataReceived
-		String[] columnNames = {"Sig", "Atn", "Med", "Δ", "Θ", "Lα", "Hα", "Lβ", "Hβ", "Lγ", "Mγ"};
+		String[] columnNames = {"Sig", "Atn", "Med", "Δ", "Θ", "Lα", "Hα", "Lβ", "Hβ", "Lγ", "Mγ", "Ms"};
 		tblModel = new DefaultTableModel(0, columnNames.length) ;
 		tblModel.setColumnIdentifiers(columnNames);
 		tblDataReceived = new JTable(tblModel);	

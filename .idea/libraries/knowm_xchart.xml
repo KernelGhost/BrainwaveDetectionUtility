@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="knowm.xchart" type="repository">
+    <properties maven-id="org.knowm.xchart:xchart:3.8.6" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/knowm/xchart/xchart/3.8.6/xchart-3.8.6.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/de/erichseifert/vectorgraphics2d/VectorGraphics2D/0.13/VectorGraphics2D-0.13.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/de/rototor/pdfbox/graphics2d/3.0.0/graphics2d-3.0.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/pdfbox/pdfbox/3.0.0/pdfbox-3.0.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/pdfbox/pdfbox-io/3.0.0/pdfbox-io-3.0.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/pdfbox/fontbox/3.0.0/fontbox-3.0.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/commons-logging/commons-logging/1.2/commons-logging-1.2.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/madgag/animated-gif-lib/1.4/animated-gif-lib-1.4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

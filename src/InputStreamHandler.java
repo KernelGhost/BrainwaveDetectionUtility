@@ -1,6 +1,10 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
+
 import com.fazecast.jSerialComm.SerialPort;
+
+import javax.swing.*;
 
 /*  This class is responsible for communication with the force trainer headset,
  *  conversion of the serial datastream into individual packets and further
@@ -10,9 +14,10 @@ import com.fazecast.jSerialComm.SerialPort;
 public class InputStreamHandler implements Runnable {
 	public SerialPort port = null;										// Stores the serial connection
 	public byte[] byteTempPacket = null;								// Stores semi-formed data packets
-	public ArrayList<int[]> arrlistForceData = new ArrayList<int[]>();	// Stores parsed data
+	public ArrayList<int[]> arrlistForceData = new ArrayList<>();	// Stores parsed data
 	public byte byteMode;												// Stores which window is open
-	public boolean boolRun;												// Stores if the thread should be alive
+	public boolean boolRun;                 	      // Stores if the thread should be alive
+	private final long startMillis = System.currentTimeMillis(); //timestamp for when it started
 	
 	public InputStreamHandler(byte byteMode) {
 		// Store what mode we are running this thread in
@@ -42,6 +47,7 @@ public class InputStreamHandler implements Runnable {
 		
 		// Try and open the port
 		if (port.openPort()) {
+			JOptionPane.showMessageDialog(null, "Connected to " + port.getSystemPortName() + "!", "BDU", JOptionPane.INFORMATION_MESSAGE, null);
 			// Configure baud and timeout options
 			port.setBaudRate(intBaudRate);
 			port.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
@@ -85,7 +91,7 @@ public class InputStreamHandler implements Runnable {
 	// Takes in the received data stream and breaks it into discrete packets
 	public ArrayList<byte[]> SplitStream(byte[] byteData, int intLength) {
 		// Stores each extracted packet from data stream
-		ArrayList<byte[]> ArrlistNewPackets = new ArrayList<byte[]>();
+		ArrayList<byte[]> ArrlistNewPackets = new ArrayList<>();
 		
 		// Stores the current position within the array of received data
 		int intCtr = 0;
@@ -192,7 +198,7 @@ public class InputStreamHandler implements Runnable {
 			byte[] bytePayload = Arrays.copyOfRange(ArrlistNewPackets.get(intCtr), 3, ArrlistNewPackets.get(intCtr).length - 1);
 			
 			// Used to store the decoded data
-			int intForceData[] = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+			int intForceData[] = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; //the last value is time!
 			
 			// Used to store if data was written or not (signal, attention, meditation & asic_eeg_power)
 			boolean boolForceData[] = new boolean[] {false, false, false, false};
@@ -201,7 +207,7 @@ public class InputStreamHandler implements Runnable {
 			int intPCtr = 0;
 			
 			// Used to store the extended code level
-			int intExCode = 0;
+			int intExCode;
 			
 			while (intPCtr < bytePayload.length) {
 				// Count the number of extended code (EXCODE) bytes (0x55)
@@ -215,9 +221,9 @@ public class InputStreamHandler implements Runnable {
 				
 				// Update pointer counter
 				intPCtr += intExCode;
-				
+				int code = bytePayload[intPCtr] & 0xFF;
 				// Check if the code is between 0x00 and 0x7F (inclusive)
-				if (((int) (bytePayload[intPCtr] & 0xFF) >= (int) (0x00 & 0xFF)) & ((int) (bytePayload[intPCtr] & 0xFF) <= (int) (0x7F & 0xFF))) {
+				if (code <= 0x7F) {
 					// This means there is no specified length (the value has a length of 1 byte)
 					if (intExCode == 0) {
 						// If the extended code level is 0
@@ -316,9 +322,17 @@ public class InputStreamHandler implements Runnable {
 			for (int intSCtr = 0; intSCtr < boolForceData.length; intSCtr++) {
 				boolSuccess &= boolForceData[intSCtr];
 			}
-				
 			if (boolSuccess) {
+				intForceData[11] = (int) (System.currentTimeMillis() - startMillis);
 				ArrlistForceData.add(intForceData);
+				//prunes the first element of the arraylist if it is greater than 1000
+				if(ArrlistForceData.size() > 1000) {
+					ArrlistForceData.remove(0);
+				}
+				if(ArrlistForceData.size() % DataFiltering.FRAME_SIZE == 0) {
+					DataFiltering filtering = Main.data_filtering;
+					filtering.averageDifferences.add(filtering.averageDifferenceCurrent());
+				}
 			}
 		}
 		

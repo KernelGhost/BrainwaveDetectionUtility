@@ -31,8 +31,9 @@ public class InputStreamHandler implements Runnable {
     }
 	
 	public void Terminate() {
-		// Stop the thread
+		// Stop the thread, close port
         boolRun = false;
+		port.closePort();
 	}
 	
 	// For use in CSV file export
@@ -62,10 +63,9 @@ public class InputStreamHandler implements Runnable {
 	public void StartStream() {
 		byte[] newData;	// Stores data received from the serial connection
 		int numRead;	// Stores the length of the data received
-		
 		while (boolRun) {
 			// Is there new data?
-			if (port.bytesAvailable() != 0) {
+			if (port.bytesAvailable() > 0) {
 				// Receive the new data and store the length
 				newData = new byte[port.bytesAvailable()];
 				numRead = port.readBytes(newData, newData.length) - 1;

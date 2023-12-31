@@ -236,7 +236,7 @@ public class frmDashboard extends JFrame {
 	    		ArrayList<int[]> arrlistForceData = Main.input_stream_handler.GetAllData();
 	    		ArrayList<boolean[]> manualFactors = Main.input_stream_handler.manualFactors;
 	    		// Write CSV Header
-	    		CSVWriter.write("Signal,Attention,Meditation,Delta,Theta,Low Alpha,High Alpha,Low Beta,High Beta,Low Gamma,Medium Gamma,Milliseconds,Eyes Closed");
+	    		CSVWriter.write("Signal,Attention,Meditation,Delta,Theta,Low Alpha,High Alpha,Low Beta,High Beta,Low Gamma,Medium Gamma,Milliseconds,Marker");
 	    		CSVWriter.newLine();
 
 				assert(manualFactors.size() == arrlistForceData.size());
@@ -402,7 +402,7 @@ public class frmDashboard extends JFrame {
 		
 		// TABLES
 		// tblDataReceived
-		String[] columnNames = new String[]{"Sig", "Atn", "Med", "Δ", "Θ", "Lα", "Hα", "Lβ", "Hβ", "Lγ", "Mγ", "Ms", "👁"};
+		String[] columnNames = new String[]{"Sig", "Atn", "Med", "Δ", "Θ", "Lα", "Hα", "Lβ", "Hβ", "Lγ", "Mγ", "Ms", "Ⓜ"};
 		tblModel = new DefaultTableModel(0, columnNames.length) ;
 		tblModel.setColumnIdentifiers(columnNames);
 		tblDataReceived = new JTable(tblModel){

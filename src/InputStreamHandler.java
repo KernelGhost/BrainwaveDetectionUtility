@@ -19,7 +19,7 @@ public class InputStreamHandler implements Runnable {
 	public boolean boolRun;                 	      // Stores if the thread should be alive
 	private final long startMillis = System.currentTimeMillis(); //timestamp for when it started
 
-	ArrayList<boolean[]> manualFactors = new ArrayList<>(); //factors such as eyes closed, etc
+	ArrayList<boolean[]> manualFactors = new ArrayList<>(); //factors such as marker, etc
 	
 	public InputStreamHandler(byte byteMode) {
 		// Store what mode we are running this thread in

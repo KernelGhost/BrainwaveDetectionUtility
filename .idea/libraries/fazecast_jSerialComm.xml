@@ -6,7 +6,7 @@
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="jar://$USER_HOME$/.ideaLibSources/jSerialComm-2.10.4-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/fazecast/jSerialComm/2.10.4/jSerialComm-2.10.4-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

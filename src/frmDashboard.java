@@ -1,3 +1,4 @@
+import javax.sound.sampled.*;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -21,10 +22,13 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.JTable;
@@ -56,15 +60,22 @@ public class frmDashboard extends JFrame {
 	private JPanel panelGraph;
 	private XYChart chartAttentionMeditation;
 	static final int VALUES_LEN = 12;
+	static final int MANUAL_FACTORS_COUNT = 1;
+	public static boolean spacePressed = false;
 	
 	// Called when new data is ready to be added to the table as new row(s)
 	public void UpdateProgressBarsTable(ArrayList<int[]> NewForceData) {
 		// For each new row (transcribed packet) of data
 		for (int intCtr = 0; intCtr < NewForceData.size(); intCtr++) {
 			// Create a string array of values using that transcribed packet
-			String strTableRow[] = new String[VALUES_LEN];
+			String strTableRow[] = new String[VALUES_LEN + MANUAL_FACTORS_COUNT];
 			for (int intSCtr = 0; intSCtr < VALUES_LEN; intSCtr++) {
 				strTableRow[intSCtr] = Integer.toString(NewForceData.get(intCtr)[intSCtr]);
+			}
+			ArrayList<boolean[]> mfs = Main.input_stream_handler.manualFactors;
+			boolean[] mfsCurrent = mfs.get(mfs.size() - 1);
+			for(int i = 0; i<MANUAL_FACTORS_COUNT; i++){
+				strTableRow[VALUES_LEN + i] = Boolean.toString(mfsCurrent[i]);
 			}
 			
 			// Create a new table row using string array
@@ -223,11 +234,12 @@ public class frmDashboard extends JFrame {
 	    		
 	    		// Request cumulative log of all received data
 	    		ArrayList<int[]> arrlistForceData = Main.input_stream_handler.GetAllData();
-	    		
+	    		ArrayList<boolean[]> manualFactors = Main.input_stream_handler.manualFactors;
 	    		// Write CSV Header
-	    		CSVWriter.write("Signal,Attention,Meditation,Delta,Theta,Low Alpha,High Alpha,Low Beta,High Beta,Low Gamma,Medium Gamma,Milliseconds");
+	    		CSVWriter.write("Signal,Attention,Meditation,Delta,Theta,Low Alpha,High Alpha,Low Beta,High Beta,Low Gamma,Medium Gamma,Milliseconds,Eyes Closed");
 	    		CSVWriter.newLine();
-	    		
+
+				assert(manualFactors.size() == arrlistForceData.size());
 	    		// Write CSV data
 	    		for (int intCtr = 0; intCtr < arrlistForceData.size(); intCtr++) {
 	    			String strLine = "";
@@ -237,6 +249,9 @@ public class frmDashboard extends JFrame {
 	    					strLine += ",";
 	    				}
 	    			}
+					for(boolean b : manualFactors.get(intCtr)){ //add manual factors
+						strLine += "," + b;
+					}
 	    			CSVWriter.write(strLine);
 	    			if (intCtr != arrlistForceData.size() - 1) {
 	    				CSVWriter.newLine();
@@ -387,10 +402,16 @@ public class frmDashboard extends JFrame {
 		
 		// TABLES
 		// tblDataReceived
-		String[] columnNames = {"Sig", "Atn", "Med", "Δ", "Θ", "Lα", "Hα", "Lβ", "Hβ", "Lγ", "Mγ", "Ms"};
+		String[] columnNames = new String[]{"Sig", "Atn", "Med", "Δ", "Θ", "Lα", "Hα", "Lβ", "Hβ", "Lγ", "Mγ", "Ms", "👁"};
 		tblModel = new DefaultTableModel(0, columnNames.length) ;
 		tblModel.setColumnIdentifiers(columnNames);
-		tblDataReceived = new JTable(tblModel);	
+		tblDataReceived = new JTable(tblModel){
+			private static final long serialVersionUID = 1L;
+
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			};
+		};
 		JTableHeader table_header = tblDataReceived.getTableHeader();
         ((DefaultTableCellRenderer)table_header.getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER); 
 		JScrollPane scroll = new JScrollPane(tblDataReceived);
@@ -413,5 +434,25 @@ public class frmDashboard extends JFrame {
 		panelGraph.setBounds(678, 6, 616, 436);
 		panelGraph.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		paneDashboard.add(panelGraph);
+		//key binding
+		tblDataReceived.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+
+			}
+
+			public void keyPressed(KeyEvent ke) {
+				if (ke.getKeyCode() == KeyEvent.VK_SPACE) {
+					spacePressed = true;
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_SPACE){
+					spacePressed = false;
+				}
+			}
+		});
 	}
 }

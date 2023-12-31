@@ -18,6 +18,8 @@ public class InputStreamHandler implements Runnable {
 	public byte byteMode;												// Stores which window is open
 	public boolean boolRun;                 	      // Stores if the thread should be alive
 	private final long startMillis = System.currentTimeMillis(); //timestamp for when it started
+
+	ArrayList<boolean[]> manualFactors = new ArrayList<>(); //factors such as eyes closed, etc
 	
 	public InputStreamHandler(byte byteMode) {
 		// Store what mode we are running this thread in
@@ -48,7 +50,6 @@ public class InputStreamHandler implements Runnable {
 		
 		// Try and open the port
 		if (port.openPort()) {
-			JOptionPane.showMessageDialog(null, "Connected to " + port.getSystemPortName() + "!", "BDU", JOptionPane.INFORMATION_MESSAGE, null);
 			// Configure baud and timeout options
 			port.setBaudRate(intBaudRate);
 			port.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
@@ -58,6 +59,8 @@ public class InputStreamHandler implements Runnable {
 		
 		return boolConnect;
 	}
+
+	int lastFilteredIndex = 0;
 	
 	// Begin processing data stream
 	public void StartStream() {
@@ -78,7 +81,13 @@ public class InputStreamHandler implements Runnable {
 				
 				// Add new information to a cumulative store of all information
 				arrlistForceData.addAll(arrlistNewData);
-				
+				if(arrlistForceData.size() % DataFiltering.FRAME_SIZE == 0 && arrlistForceData.size() > lastFilteredIndex) {
+					DataFiltering filtering = Main.data_filtering;
+					filtering.averageDifferences.add(filtering.averageDifferenceCurrent());
+					System.out.println(filtering.averageDifferences.get(filtering.averageDifferences.size() - 1));
+					lastFilteredIndex = arrlistForceData.size();
+					if(lastFilteredIndex % DataFiltering.ANALYSIS_PERIOD == 0) filtering.analyzeForSpike(DataFiltering.ANALYSIS_PERIOD);
+				}
 				// Update graphs, tables, etc. within other windows
 				Main.window_manager.UpdateWindow(byteMode, arrlistNewData, arrlistForceData);
 			}
@@ -326,13 +335,10 @@ public class InputStreamHandler implements Runnable {
 				intForceData[11] = (int) (System.currentTimeMillis() - startMillis);
 				ArrlistForceData.add(intForceData);
 				//prunes the first element of the arraylist if it is greater than 1000
-				if(ArrlistForceData.size() > 1000) {
+				if(ArrlistForceData.size() > 2000) {
 					ArrlistForceData.remove(0);
 				}
-				if(ArrlistForceData.size() % DataFiltering.FRAME_SIZE == 0) {
-					DataFiltering filtering = Main.data_filtering;
-					filtering.averageDifferences.add(filtering.averageDifferenceCurrent());
-				}
+				manualFactors.add(new boolean[]{frmDashboard.spacePressed});
 			}
 		}
 		

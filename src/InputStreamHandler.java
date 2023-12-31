@@ -296,13 +296,10 @@ public class InputStreamHandler implements Runnable {
 								if (bytePayload[intPCtr + 1] == (byte) 0x18) {
 							  		intPCtr += 2;
 							  		for (int intLCtr = 1; intLCtr <= 8; intLCtr++) {
-							  			intForceData[intLCtr + 2] = (int) (bytePayload[intPCtr] << 16);
-								  		intForceData[intLCtr + 2] |= (int) (bytePayload[intPCtr + 1] << 8);
-								  		intForceData[intLCtr + 2] |= (int) (bytePayload[intPCtr + 2]);
-								  		intForceData[intLCtr + 2] &= 0xFFFFFF;
+										byte[] value = Arrays.copyOfRange(bytePayload, intPCtr, intPCtr + 3);
+										intForceData[intLCtr + 2] = convertLittleEndianToBigEndian(value);
 								  		intPCtr += 3;
 							  		}
-							  		
 							  		boolForceData[3] = true;
 								} else {
 									// Specified length is incorrect for excode/code combination specified.
@@ -343,5 +340,16 @@ public class InputStreamHandler implements Runnable {
 		}
 		
 		return ArrlistForceData;
+	}
+
+	public static int convertLittleEndianToBigEndian(byte[] littleEndianBytes) {
+		if (littleEndianBytes.length != 3) {
+			throw new IllegalArgumentException("Input should be a 3-byte long array");
+		}
+		int bigEndian = 0;
+		bigEndian |= (littleEndianBytes[2] & 0xFF) << 16;
+		bigEndian |= (littleEndianBytes[1] & 0xFF) << 8;
+		bigEndian |= (littleEndianBytes[0] & 0xFF);
+		return bigEndian;
 	}
 }

@@ -52,27 +52,7 @@ public class DataFiltering {
     public void analyzeForSpike(int window){
         assert(averageDifferences.size() > 1);
 
-        double trend = 0;
-        for(int i = (averageDifferences.size() - window) + 1; i<averageDifferences.size(); i++){
-            double diff = diffOfDiffs(i);
-            System.out.println("individual diff " + i + " is " + diff);
-            if(diff < 0){
-                diff *= DOWNWARDS_MULTIPLIER;
-                if(Math.abs(diff) > PATTERN_BREAK_THRESHOLD){
-                    System.out.println("diff of " + diff + " broke the upwards trend");
-                    break;
-                }
-                trend += diff;
-            }
-            else{
-                diff *= UPWARDS_MULTIPLIER;
-                trend += diff;
-            }
-        }
-        if(trend >= CHANGE_THRESH){
-            System.out.println("it's been triggered!");
-        }
-        else System.out.println("not triggered trend = " + trend);
+        
     }
 
     public void checkTrigger(){

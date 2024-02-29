@@ -6,6 +6,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 public class Main {
 	public static WindowManager window_manager;
 	public static InputStreamHandler input_stream_handler;
+	public static DataFiltering data_filtering;
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {

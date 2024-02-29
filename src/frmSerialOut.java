@@ -33,6 +33,10 @@ import java.awt.event.ActionEvent;
 import java.awt.Toolkit;
 import java.awt.Font;
 
+/**
+ * This class is used to display the serial output window. It also handles the sending of data to the output device.
+ * The device it is outputting to is selected by the user from the comboOut JComboBox.
+ */
 @SuppressWarnings("unused")
 public class frmSerialOut extends JFrame {
 	private static final long serialVersionUID = -3989920599003472769L;
@@ -73,6 +77,7 @@ public class frmSerialOut extends JFrame {
 		if (ForceTrainer != OutputDevice) {
 			// Attempt to establish a connection with both devices
 			Main.input_stream_handler = new InputStreamHandler((byte) 2);
+			Main.data_filtering = new DataFiltering();
 			boolForceTrainer = Main.input_stream_handler.ConnectPort(ForceTrainer, intBaudRate);
 			boolOutputDevice = OutputDevice.openPort();
 			

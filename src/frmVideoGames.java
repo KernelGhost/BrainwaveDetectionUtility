@@ -50,6 +50,7 @@ public class frmVideoGames extends JFrame {
 	// Attempts to connect to the selected serial port within a new thread
 	private boolean ConnectPort(int intPortIndex, int intBaudRate) {
 		Main.input_stream_handler = new InputStreamHandler((byte) 1);
+		Main.data_filtering = new DataFiltering();
 		boolean boolConnect = Main.input_stream_handler.ConnectPort(ports[intPortIndex], intBaudRate);
 		
 		if(boolConnect) {

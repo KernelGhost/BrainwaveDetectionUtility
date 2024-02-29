@@ -58,7 +58,6 @@ public class AirballGame extends JPanel implements KeyListener, ActionListener {
 		// Set Width and Height
 		this.intWidth = intWidth;
 		this.intHeight = intHeight;
-		
 		// Position paddle to the bottom and center of the screen
 		intPaddleY = intHeight - intPaddleHeight;
 		intPaddleX = (intWidth - intPaddleWidth)/2;
@@ -324,7 +323,7 @@ public class AirballGame extends JPanel implements KeyListener, ActionListener {
 	}
 	
 	public void MovePaddle(ArrayList<int[]> arrlistForceData) {
-		if (arrlistForceData.size() != 0) {
+		if (!arrlistForceData.isEmpty()) {
 			// Use only the most recent value
 			int intAttn = arrlistForceData.get(arrlistForceData.size() - 1)[1];
 			

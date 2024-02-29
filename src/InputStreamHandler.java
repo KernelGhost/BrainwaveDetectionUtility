@@ -1,6 +1,10 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
+
 import com.fazecast.jSerialComm.SerialPort;
+
+import javax.swing.*;
 
 /*  This class is responsible for communication with the force trainer headset,
  *  conversion of the serial datastream into individual packets and further
@@ -10,9 +14,12 @@ import com.fazecast.jSerialComm.SerialPort;
 public class InputStreamHandler implements Runnable {
 	public SerialPort port = null;										// Stores the serial connection
 	public byte[] byteTempPacket = null;								// Stores semi-formed data packets
-	public ArrayList<int[]> arrlistForceData = new ArrayList<int[]>();	// Stores parsed data
+	public ArrayList<int[]> arrlistForceData = new ArrayList<>();	// Stores parsed data
 	public byte byteMode;												// Stores which window is open
-	public boolean boolRun;												// Stores if the thread should be alive
+	public boolean boolRun;                 	      // Stores if the thread should be alive
+	private final long startMillis = System.currentTimeMillis(); //timestamp for when it started
+
+	ArrayList<boolean[]> manualFactors = new ArrayList<>(); //factors such as marker, etc
 	
 	public InputStreamHandler(byte byteMode) {
 		// Store what mode we are running this thread in
@@ -26,8 +33,9 @@ public class InputStreamHandler implements Runnable {
     }
 	
 	public void Terminate() {
-		// Stop the thread
+		// Stop the thread, close port
         boolRun = false;
+		port.closePort();
 	}
 	
 	// For use in CSV file export
@@ -51,15 +59,16 @@ public class InputStreamHandler implements Runnable {
 		
 		return boolConnect;
 	}
+
+	int lastFilteredIndex = 0;
 	
 	// Begin processing data stream
 	public void StartStream() {
 		byte[] newData;	// Stores data received from the serial connection
 		int numRead;	// Stores the length of the data received
-		
 		while (boolRun) {
 			// Is there new data?
-			if (port.bytesAvailable() != 0) {
+			if (port.bytesAvailable() > 0) {
 				// Receive the new data and store the length
 				newData = new byte[port.bytesAvailable()];
 				numRead = port.readBytes(newData, newData.length) - 1;
@@ -72,7 +81,13 @@ public class InputStreamHandler implements Runnable {
 				
 				// Add new information to a cumulative store of all information
 				arrlistForceData.addAll(arrlistNewData);
-				
+				if(arrlistForceData.size() % DataFiltering.FRAME_SIZE == 0 && arrlistForceData.size() > lastFilteredIndex) {
+					DataFiltering filtering = Main.data_filtering;
+					filtering.averageDifferences.add(filtering.averageDifferenceCurrent());
+					System.out.println(filtering.averageDifferences.get(filtering.averageDifferences.size() - 1));
+					lastFilteredIndex = arrlistForceData.size();
+					if(lastFilteredIndex % DataFiltering.ANALYSIS_PERIOD == 0) filtering.analyzeForSpike(DataFiltering.ANALYSIS_PERIOD);
+				}
 				// Update graphs, tables, etc. within other windows
 				Main.window_manager.UpdateWindow(byteMode, arrlistNewData, arrlistForceData);
 			}
@@ -85,7 +100,7 @@ public class InputStreamHandler implements Runnable {
 	// Takes in the received data stream and breaks it into discrete packets
 	public ArrayList<byte[]> SplitStream(byte[] byteData, int intLength) {
 		// Stores each extracted packet from data stream
-		ArrayList<byte[]> ArrlistNewPackets = new ArrayList<byte[]>();
+		ArrayList<byte[]> ArrlistNewPackets = new ArrayList<>();
 		
 		// Stores the current position within the array of received data
 		int intCtr = 0;
@@ -192,7 +207,7 @@ public class InputStreamHandler implements Runnable {
 			byte[] bytePayload = Arrays.copyOfRange(ArrlistNewPackets.get(intCtr), 3, ArrlistNewPackets.get(intCtr).length - 1);
 			
 			// Used to store the decoded data
-			int intForceData[] = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+			int intForceData[] = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; //the last value is time!
 			
 			// Used to store if data was written or not (signal, attention, meditation & asic_eeg_power)
 			boolean boolForceData[] = new boolean[] {false, false, false, false};
@@ -201,7 +216,7 @@ public class InputStreamHandler implements Runnable {
 			int intPCtr = 0;
 			
 			// Used to store the extended code level
-			int intExCode = 0;
+			int intExCode;
 			
 			while (intPCtr < bytePayload.length) {
 				// Count the number of extended code (EXCODE) bytes (0x55)
@@ -215,9 +230,9 @@ public class InputStreamHandler implements Runnable {
 				
 				// Update pointer counter
 				intPCtr += intExCode;
-				
+				int code = bytePayload[intPCtr] & 0xFF;
 				// Check if the code is between 0x00 and 0x7F (inclusive)
-				if (((int) (bytePayload[intPCtr] & 0xFF) >= (int) (0x00 & 0xFF)) & ((int) (bytePayload[intPCtr] & 0xFF) <= (int) (0x7F & 0xFF))) {
+				if (code <= 0x7F) {
 					// This means there is no specified length (the value has a length of 1 byte)
 					if (intExCode == 0) {
 						// If the extended code level is 0
@@ -281,13 +296,10 @@ public class InputStreamHandler implements Runnable {
 								if (bytePayload[intPCtr + 1] == (byte) 0x18) {
 							  		intPCtr += 2;
 							  		for (int intLCtr = 1; intLCtr <= 8; intLCtr++) {
-							  			intForceData[intLCtr + 2] = (int) (bytePayload[intPCtr] << 16);
-								  		intForceData[intLCtr + 2] |= (int) (bytePayload[intPCtr + 1] << 8);
-								  		intForceData[intLCtr + 2] |= (int) (bytePayload[intPCtr + 2]);
-								  		intForceData[intLCtr + 2] &= 0xFFFFFF;
+										byte[] value = Arrays.copyOfRange(bytePayload, intPCtr, intPCtr + 3);
+										intForceData[intLCtr + 2] = convertLittleEndianToBigEndian(value);
 								  		intPCtr += 3;
 							  		}
-							  		
 							  		boolForceData[3] = true;
 								} else {
 									// Specified length is incorrect for excode/code combination specified.
@@ -316,12 +328,28 @@ public class InputStreamHandler implements Runnable {
 			for (int intSCtr = 0; intSCtr < boolForceData.length; intSCtr++) {
 				boolSuccess &= boolForceData[intSCtr];
 			}
-				
 			if (boolSuccess) {
+				intForceData[11] = (int) (System.currentTimeMillis() - startMillis);
 				ArrlistForceData.add(intForceData);
+				//prunes the first element of the arraylist if it is greater than 1000
+				if(ArrlistForceData.size() > 2000) {
+					ArrlistForceData.remove(0);
+				}
+				manualFactors.add(new boolean[]{frmDashboard.spacePressed});
 			}
 		}
 		
 		return ArrlistForceData;
+	}
+
+	public static int convertLittleEndianToBigEndian(byte[] littleEndianBytes) {
+		if (littleEndianBytes.length != 3) {
+			throw new IllegalArgumentException("Input should be a 3-byte long array");
+		}
+		int bigEndian = 0;
+		bigEndian |= (littleEndianBytes[2] & 0xFF) << 16;
+		bigEndian |= (littleEndianBytes[1] & 0xFF) << 8;
+		bigEndian |= (littleEndianBytes[0] & 0xFF);
+		return bigEndian;
 	}
 }
